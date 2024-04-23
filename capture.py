@@ -1,17 +1,10 @@
 import cv2
-import os
-from flask import Flask, request, render_template, redirect, url_for, flash, session
-from datetime import date
-from datetime import datetime
 import numpy as np
-import pandas as pd
-import joblib
-import glob
 import face_recognition
 import pickle
 import sqlite3
 import sys
-
+from datetime import date, datetime
 
 # Saving Date today in 2 different formats
 datetoday = date.today().strftime("%m_%d_%y")
@@ -38,12 +31,12 @@ def add_attendance(person):
         print("Attendance added for", name)
     conn.close()
 
-    # Load the face encodings dictionary from the file
+
+# Load the face encodings dictionary from the file
 with open("static/face_encodings.pkl", "rb") as f:
     face_encodings_dict = pickle.load(f)
 
 ret = True
-# cap = cv2.VideoCapture(0)
 cap = cv2.VideoCapture()
 cap.open("http://192.168.1.3:8001")
 while ret:
@@ -81,5 +74,3 @@ while ret:
         break
 cap.release()
 cv2.destroyAllWindows()
-
-
