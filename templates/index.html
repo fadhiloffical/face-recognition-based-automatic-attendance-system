@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Face Recognition Based Attendance System</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <!-- Add these lines to include Bootstrap JS and Popper.js -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.min.js"></script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/main.css')}}" />
+    <noscript>
+        <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/noscript.css')}}" />
+    </noscript>
+    <style>
+        body {
+
+            background-size: cover;
+            font-family: sans-serif;
+            margin-top: 40px;
+            height: 100vh;
+            padding: 0;
+            margin: 0;
+        }
+
+        table {
+            border: 1px;
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 86%;
+            margin: auto;
+        }
+
+        td,
+        th {
+            border: 1px solid black !important;
+            padding: 8px;
+            /* Adjusted padding for better alignment */
+        }
+
+        tr:nth-child(even) {
+            background-color: #dddddd;
+        }
+
+        header {
+            color: white;
+            background-color: #0b4c61;
+            padding: 2rem 3rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: white;
+
+        }
+
+        .copyright {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        li {
+            list-style: none;
+            color: white;
+        }
+
+        footer {
+            background-color: #0b4c61;
+            color: white;
+            padding: 2rem 3rem;
+        }
+
+        .contact {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 4rem;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 1rem;
+            font-size: 1.2rem;
+            font-weight: 400;
+        }
+
+        .about-footer {
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        a {
+            color: white;
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: white;
+            text-decoration: underline;
+        }
+
+        .icons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem 4rem
+        }
+
+        .about-footer>p {
+            opacity: 50%;
+            line-height: 1.5;
+        }
+
+        .w-full {
+            width: 100%;
+        }
+
+        .mb-6 {
+            margin-bottom: 6rem;
+        }
+
+        .flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: fit-content;
+        }
+
+        .card-body>div {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+    </style>
+</head>
+
+
+<body class="homepage is-preload">
+    <div id="page-wrapper">
+        <!-- Header -->
+        <div id="header">
+            <!-- Inner -->
+            <div class="inner">
+                <header>
+                    <h1><a href="/" id="logo">Automatic Attendance System</a></h1>
+                    <hr />
+                    {% if mess%}
+                    <p class="text-center" style="color: red;font-size: 20px;">{{ mess }}</p>
+                    {% endif %}
+                </header>
+                <footer>
+                    <a href="#banner" class="button circled scrolly">Start</a>
+                </footer>
+                <!-- Add this section at the top of your HTML body -->
+                {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                <div class="container mt-3">
+                    {% for message in messages %}
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% endwith %}
+
+                <!-- Rest of your HTML body content -->
+            </div>
+            <!-- Nav -->
+            <nav id="nav">
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="#banner">Take Attendance</a></li>
+                    {% if session['logged_in'] %}
+                    <li><a href="/logout">Logout</a></li>
+                    {% else %}
+                    <li><a href="/login">Login</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Banner -->
+        <section id="banner">
+
+            <div class="section-header">
+                <h2>Face Recognition Based Automatic Attendance System.</h2>
+                <p>
+                <h6>
+                    Click on the Take attendance button to start automatic taking of attendance. Press the esc button
+                    when you are done, and the list of attendees will be displayed.<br>
+                    Enter the Name, ID of entries and click add user to add a new user. While adding a new user, the
+                    camera will open up and capture the face image of that user.
+                </h6>
+                </p>
+            </div>
+            <div class="container mt-5">
+                {% if session['logged_in'] %}
+
+                {% if session['user_type'] == 'Staff' %}
+                <!-- Using flexbox to center the row horizontally -->
+                <div class="d-flex justify-content-center">
+                    <!-- Today's Attendance -->
+                    <div class="w-full mb-6">
+                        <div class="card mb-3 w-full">
+                            <div class="card-header d-flex justify-content-between"
+                                style="background-color: #0b4c61; color: white;">
+                                <div class="flex-grow-1">
+                                    Today's Attendance </div>
+                                <div>
+                                    <div class="d-flex align-items-center"><i class="material-icons">assignment</i>
+                                        Logged in as {{ session['user_type'] }}: {{ session['username'] }}</div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div class="flex-grow-1 justify-content-start d-flex">
+                                        <a href="/start" class="btn btn-primary btn-lg m-2 d-none">Take Attendance</a>
+
+                                        <a href="/newperiod" class="btn btn-warning btn-lg m-2 d-none">New Period</a>
+                                    </div>
+                                    <!-- New button for a new period -->
+                                    <div class="d-flex align-items-center justify-content-center">
+                                        <div class="input-group mb-3">
+                                            <input type="number" id="period" name="period" class="form-control " min="1"
+                                                max="12" aria-label="Enter Period" placeholder="Enter Period" required
+                                                size="1" value="1" maxlength="2" onchange="getAttendance()">
+                                            <button id="start-cam" class="btn btn-success btn-sm align-items-center"
+                                                style="display: flex;">
+                                                Start Taking Attendance <i class="material-icons">
+                                                    videocam
+                                                </i>
+                                            </button>
+                                            <button id="stop-cam" class="btn btn-danger btn-sm  align-items-center"
+                                                style="display: none;">
+                                                Stop Taking Attendance <i class="material-icons">
+                                                    videocam_off
+                                                </i>
+                                            </button>
+                                        </div>
+                                        <script>
+                                            fetch('/status-cam').then(res => res.json()).then(data => {
+                                                getAttendance()
+                                                if (data.message === 'Running') {
+                                                    document.getElementById('stop-cam').style.display = 'flex';
+                                                    document.getElementById('start-cam').style.display = 'none';
+                                                } else {
+                                                    document.getElementById('start-cam').style.display = 'flex';
+                                                    document.getElementById('stop-cam').style.display = 'none';
+                                                }
+                                            });
+                                            let intervalId;
+                                            document.getElementById('start-cam').addEventListener('click', () => {
+                                                fetch('/start-cam', {
+                                                    method: 'POST',
+                                                    headers: {
+                                                        'Content-Type': 'application/json'
+                                                    },
+                                                    body: JSON.stringify({
+                                                        period: document.getElementById('period').value
+                                                    }),
+                                                }).then(res => res.json()).then(data => {
+                                                    console.log(data);
+                                                    alert(data.message);
+                                                    document.getElementById('stop-cam').style.display = 'flex';
+                                                    document.getElementById('start-cam').style.display = 'none';
+                                                    intervalId = setInterval(getAttendance, 3000);
+                                                })
+                                            })
+                                            document.getElementById('stop-cam').addEventListener('click', () => {
+                                                fetch('/stop-cam', {
+                                                    method: 'POST'
+                                                }).then(res => res.json()).then(data => {
+                                                    console.log(data);
+                                                    alert(data.message)
+                                                    document.getElementById('stop-cam').style.display = 'none';
+                                                    document.getElementById('start-cam').style.display = 'flex';
+                                                    clearInterval(intervalId);
+                                                })
+                                            })
+                                        </script>
+                                    </div>
+                                </div>
+                                <table class="table mt-3">
+                                    <thead>
+                                        <tr>
+                                            <th>SI No</th>
+                                            <th>Name</th>
+                                            <th>Roll No</th>
+                                            <th>Time</th>
+                                            <th>Date</th>
+                                            <th>Period</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="attendance">
+
+                                    </tbody>
+                                </table>
+                                <script>
+                                    function getAttendance() {
+                                        let period = document.getElementById('period').value;
+                                        fetch(`/get-attendance?period=${period}`).then(res => res.json()).then(data => {
+                                            console.log(data);
+                                            let tbody = document.getElementById('attendance')
+                                            tbody.innerHTML = '';
+                                            data.forEach((item, index) => {
+                                                let tr = document.createElement('tr');
+                                                tr.innerHTML = `
+                                                    <td>${index + 1}</td>
+                                                    <td>${item[0]}</td>
+                                                    <td>${item[1]}</td>
+                                                    <td>${item[2]}</td>
+                                                    <td>${item[3]}</td>
+                                                    <td>${item[5]}</td>
+                                                `;
+                                                tbody.appendChild(tr);
+                                            });
+                                        });
+                                    }
+                                    setTimeout(getAttendance, 1000);           
+                                </script>
+                                <table class="table mt-3 d-none">
+                                    <thead>
+                                        <tr>
+                                            <th>S No</th>
+                                            <th>Name</th>
+                                            <th>ID</th>
+                                            <th>Time</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% if l %}
+                                        {% for i in range(l) %}
+                                        <tr>
+                                            <td>{{ i + 1 }}</td>
+                                            <td>{{ names[i] }}</td>
+                                            <td>{{ rolls[i] }}</td>
+                                            <td>{{ times[i] }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                        {% endif %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="w-full mb-6">
+                        <div class="card mb-3 w-full">
+                            <div class="card-header" style="background-color: #0b4c61; color: white;">
+                                Report <i class="material-icons">assignment</i>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-end">
+                                    <div class="flex-grow-1 justify-content-end d-flex">
+                                        <form id="report">
+                                            <div class="input-group mb-3">
+                                                <span class="input-group-text">Choose Date</span>
+                                                <input type="date" id="date" name="date" class="form-control w-full"
+                                                    required>
+                                                <span class="input-group-text">Select Period</span>
+                                                <select id="period" name="period" class="form-select" required>
+                                                    <option value="1">1</option>
+                                                    <option value="2">2</option>
+                                                    <option value="3">3</option>
+                                                    <option value="4">4</option>
+                                                    <option value="5">5</option>
+                                                    <option value="6">6</option>
+                                                    <option value="7">7</option>
+                                                    <option value="8">8</option>
+                                                    <option value="9">9</option>
+                                                    <option value="10">10</option>
+                                                    <option value="11">11</option>
+                                                    <option value="12">12</option>
+                                                </select>
+                                                <button type="submit" class="btn btn-primary">Get
+                                                    Report</button>
+                                            </div>
+                                        </form>
+                                        <script>
+                                            let report = document.getElementById('report');
+                                            report.addEventListener('submit', (e) => {
+                                                e.preventDefault();
+                                                let formData = new FormData(report);
+                                                let jsonObject = {};
+
+                                                for (const [key, value] of formData.entries()) {
+                                                    jsonObject[key] = value;
+                                                }
+                                                fetch('/get-report-user', {
+                                                    method: 'POST',
+                                                    headers: {
+                                                        'Content-Type': 'application/json'
+                                                    },
+                                                    body: JSON.stringify(jsonObject)
+                                                }).then(res => res.json()).then(data => {
+                                                    console.log(data);
+                                                    let tbody = document.getElementById('report-table');
+                                                    tbody.innerHTML = '';
+                                                    data.forEach((item, index) => {
+                                                        let tr = document.createElement('tr');
+                                                        tr.innerHTML = `
+                                                            <td>${index + 1}</td>
+                                                            <td>${item[0]}</td>
+                                                            <td>${item[1]}</td>
+                                                            <td>${item[2]}</td>
+                                                            <td>${item[3]}</td>
+                                                            <td>${item[5]}</td>
+                                                        `;
+                                                        tbody.appendChild(tr);
+                                                    });
+                                                });
+                                            })
+                                        </script>
+                                    </div>
+                                </div>
+                                <div>
+                                    <table class="table mt-3">
+                                        <thead>
+                                            <tr>
+                                                <th>SI No</th>
+                                                <th>Name</th>
+                                                <th>Roll No</th>
+                                                <th>Time</th>
+                                                <th>Date</th>
+                                                <th>Period</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="report-table">
+
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if session['user_type'] == 'Admin' %}
+                <!-- Using flexbox to center the row horizontally -->
+                <div>
+                    <div class="w-full mb-6">
+                        <div class="card mb-3 w-full">
+                            <div class="card-header" style="background-color: #0b4c61; color: white;">
+                                Admin Report <i class="material-icons">assignment</i>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-end">
+                                    <div class="flex-grow-1 justify-content-end d-flex">
+                                        <form id="admin_report">
+                                            <div class="input-group mb-3">
+                                                <span class="input-group-text">Choose Date</span>
+                                                <input type="date" id="date" name="date" class="form-control w-full"
+                                                    required>
+                                                <span class="input-group-text">Select Period</span>
+                                                <select id="period" name="period" class="form-select" required>
+                                                    <option value="1">1</option>
+                                                    <option value="2">2</option>
+                                                    <option value="3">3</option>
+                                                    <option value="4">4</option>
+                                                    <option value="5">5</option>
+                                                    <option value="6">6</option>
+                                                    <option value="7">7</option>
+                                                    <option value="8">8</option>
+                                                    <option value="9">9</option>
+                                                    <option value="10">10</option>
+                                                    <option value="11">11</option>
+                                                    <option value="12">12</option>
+                                                </select>
+                                                <button type="submit" class="btn btn-primary">Get
+                                                    Report</button>
+                                            </div>
+                                        </form>
+                                        <script>
+                                            let report_admin = document.getElementById('admin_report');
+                                            report_admin.addEventListener('submit', (e) => {
+                                                e.preventDefault();
+                                                let formData = new FormData(report_admin);
+                                                let jsonObject = {};
+
+                                                for (const [key, value] of formData.entries()) {
+                                                    jsonObject[key] = value;
+                                                }
+
+                                                fetch('/get-report-all', {
+                                                    method: 'POST',
+                                                    headers: {
+                                                        'Content-Type': 'application/json'
+                                                    },
+                                                    body: JSON.stringify(jsonObject)
+                                                }).then(res => res.json()).then(data => {
+                                                    console.log(data);
+                                                    let tbody = document.getElementById('report-table');
+                                                    tbody.innerHTML = '';
+                                                    data.forEach((item, index) => {
+                                                        let tr = document.createElement('tr');
+                                                        tr.innerHTML = `
+                                                            <td>${index + 1}</td>
+                                                            <td>${item[0]}</td>
+                                                            <td>${item[1]}</td>
+                                                            <td>${item[2]}</td>
+                                                            <td>${item[3]}</td>
+                                                            <td>${item[5]}</td>
+                                                            <td>${item[4]}</td>
+                                                        `;
+                                                        tbody.appendChild(tr);
+                                                    });
+                                                });
+                                            })
+                                        </script>
+                                    </div>
+                                </div>
+                                <div>
+                                    <table class="table mt-3">
+                                        <thead>
+                                            <tr>
+                                                <th>SI No</th>
+                                                <th>Name</th>
+                                                <th>Roll No</th>
+                                                <th>Time</th>
+                                                <th>Date</th>
+                                                <th>Period</th>
+                                                <th>staff</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="report-table">
+
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% else %}
+                <div class="w-full mb-6">
+                    <div class="card mb-3 w-full">
+                        <div class="card-header" style="background-color: #0b4c61; color: white;">
+                            Login to access data
+                            <a href="/login" class="btn btn-primary">Click here to login</a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Add New User -->
+                <!-- <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-header" style="background-color: #0b4c61; color: white;">
+                                Add New User <i class="material-icons">control_point_duplicate</i>
+                            </div>
+                            <div class="card-body">
+                                <form action='/add' method="POST" enctype="multipart/form-data">
+                                    <label for="newusername" class="form-label">Enter New User Name*</label>
+                                    <input type="text" id="newusername" name='newusername' class="form-control" required>
+                                    <label for="newuserid" class="form-label mt-3">Enter New User Id*</label>
+                                    <input type="number" id="newuserid" name='newuserid' class="form-control" required>
+                                    <button type='submit' class='btn btn-dark mt-3 btn-lg btn-block'>Add New User</button>
+                                    <h5 class="mt-4"><i>Total Users in Database: {{totalreg}}</i></h5><a class="btn btn-secondary" href="/listusers"> List users</a>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div> -->
+            </div>
+        </section>
+
+
+
+        <!-- Footer -->
+        <footer id="footer">
+            <!-- Contact -->
+            <section class="contact container">
+                <div class="about-footer">
+                    <h3>Automatic Attendence System</h3>
+                    <p>Face Recognition based automatic attendence sytem webapp, developed using python flask.
+                    </p>
+                </div>
+                <ul class="icons">
+                    <li>
+                        <a href="#" class="icon brands fa-twitter"><span class="label">Twitter</span></a>
+                    </li>
+                    <li>
+                        <a href="#" class="icon brands fa-facebook-f"><span class="label">Facebook</span></a>
+                    </li>
+                    <li>
+                        <a href="#" class="icon brands fa-instagram"><span class="label">Instagram</span></a>
+                    </li>
+                    <li>
+                        <a href="#" class="icon brands fa-pinterest"><span class="label">Pinterest</span></a>
+                    </li>
+                    <li>
+                        <a href="#" class="icon brands fa-dribbble"><span class="label">Dribbble</span></a>
+                    </li>
+                    <li>
+                        <a href="#" class="icon brands fa-linkedin-in"><span class="label">Linkedin</span></a>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- Copyright -->
+            <div class="copyright container">
+                <li>&copy; python. All rights reserved.</li>
+                <li>Design: Flask</li>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='assets/js/jquery.min.js')}}"></script>
+    <script src="{{ url_for('static', filename='assets/js/jquery.dropotron.min.js')}}"></script>
+    <script src="{{ url_for('static', filename='assets/js/jquery.scrolly.min.js')}}"></script>
+    <script src="{{ url_for('static', filename='assets/js/jquery.scrollex.min.js')}}"></script>
+    <script src="{{ url_for('static', filename='assets/js/browser.min.js')}}"></script>
+    <script src="{{ url_for('static', filename='assets/js/breakpoints.min.js')}}"></script>
+    <script src="{{ url_for('static', filename='assets/js/util.js')}}"></script>
+    <script src="{{ url_for('static', filename='assets/js/main.js')}}"></script>
+
+</body>
+
+</html>
