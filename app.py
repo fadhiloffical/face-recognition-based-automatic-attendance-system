@@ -237,53 +237,6 @@ def start():
     cv2.destroyAllWindows()
     names, rolls, times, l = extract_attendance()
     return render_template('index.html', names=names, rolls=rolls, times=times, l=l, totalreg=totalreg(), datetoday2=datetoday2)
-# A function to add a new user.
-# This function will run when we add a new user.
-
-
-# @app.route('/add', methods=['GET', 'POST'])
-# def add():
-#     newusername = request.form['newusername']
-#     newuserid = request.form['newuserid']
-
-#     # Check if a user with the same ID already exists
-#     existing_users = os.listdir('static/faces')
-#     for user in existing_users:
-#         _, existing_userid = user.split('_')
-#         if existing_userid == newuserid:
-#             flash('User with the same ID already exists. Please choose a different ID or delete the existing user.')
-#             return redirect(url_for('home'))
-
-#     userimagefolder = 'static/faces/' + newusername + '_' + str(newuserid)
-#     if not os.path.isdir(userimagefolder):
-#         os.makedirs(userimagefolder)
-
-#     i, j = 0, 0
-#     cap = cv2.VideoCapture(0)
-#     while 1:
-#         _, frame = cap.read()
-#         faces = extract_faces(frame)
-#         for (x, y, w, h) in faces:
-#             cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 20), 2)
-#             cv2.putText(frame, f'Images Captured: {i}/{nimgs}', (30, 30),
-#                         cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 20), 2, cv2.LINE_AA)
-#             if j % 5 == 0:
-#                 name = newusername + '_' + str(i) + '.jpg'
-#                 cv2.imwrite(userimagefolder + '/' + name, frame[y:y+h, x:x+w])
-#                 i += 1
-#             j += 1
-#         if j == nimgs*5:
-#             break
-#         cv2.imshow('Adding new User', frame)
-#         if cv2.waitKey(1) == 27:
-#             break
-
-#     cap.release()
-#     cv2.destroyAllWindows()
-#     print('Training Model')
-#     train_model()
-#     names, rolls, times, l = extract_attendance()
-#     return render_template('index.html', names=names, rolls=rolls, times=times, l=l, totalreg=totalreg(), datetoday2=datetoday2)
 
 # Route to create a new period (new attendance file) and clear the attendance list
 @app.route('/newperiod', methods=['GET'])
